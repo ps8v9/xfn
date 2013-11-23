@@ -1,8 +1,8 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. XFN.
-      * Test program for the XF4 and XF5 procedures, which mimic
-      * GNUCOBOL's X"F4" and X"F5" library routines. Some tests are run
-      * to compare their relative performance.
+      * Test program for the XF4 and XF5 procedures, which mimic GNU
+      * COBOL's X"F4" and X"F5" library routines. Some tests are run to
+      * compare their relative performance.
 
        DATA DIVISION.
        WORKING-STORAGE SECTION.
@@ -39,15 +39,6 @@
       *    Reset the input data.
            MOVE 42 TO XFN-COMP-BYTE
 
-      *    Do the same using FAST-XF5.
-           DISPLAY "Testing the FAST-XF5 procedure:"
-           PERFORM FAST-XF5 THRU FAST-XF5-EXIT
-           DISPLAY "  byte: " XFN-DISPLAY-BYTE
-           DISPLAY "  bits: " XFN-DISPLAY-ARRAY
-
-      *    Reset the input data.
-           MOVE 42 TO XFN-COMP-BYTE
-
       *    Do the same using CALL X"F5".
            DISPLAY 'Testing CALL X"F5":'
            CALL X"F5" USING XFN-COMP-BYTE XFN-COMP-ARRAY
@@ -66,14 +57,6 @@
            DISPLAY "  bits: " XFN-DISPLAY-ARRAY
            DISPLAY "  byte: " XFN-DISPLAY-BYTE
 
-      *    Do the same using FAST-XF4.
-           DISPLAY "Testing the FAST-XF4 procedure:"
-           MOVE 0 TO XFN-COMP-BYTE
-           PERFORM FAST-XF4 THRU FAST-XF4-EXIT
-           MOVE XFN-COMP-BYTE TO XFN-DISPLAY-BYTE
-           DISPLAY "  bits: " XFN-DISPLAY-ARRAY
-           DISPLAY "  byte: " XFN-DISPLAY-BYTE
-
       *    Do the same using CALL X"F4".
            DISPLAY 'Testing CALL X"F4":'
            MOVE 0 TO XFN-COMP-BYTE
@@ -87,16 +70,10 @@
            MOVE "XF5" TO WS-ROUTINE
            PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
 
-           MOVE "FAST-XF5" TO WS-ROUTINE
-           PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
-
            MOVE 'CALL X"F5"' TO WS-ROUTINE
            PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
 
            MOVE "XF4" TO WS-ROUTINE
-           PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
-
-           MOVE "FAST-XF4" TO WS-ROUTINE
            PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
 
            MOVE 'CALL X"F4"' TO WS-ROUTINE
@@ -107,86 +84,32 @@
            GOBACK
            .
 
-
       ******************************************************************
-      * XF4: Merges 8 binary digits into a single byte. *
+      * XF4: Merges 8 binary digits into a single byte.                *
       ******************************************************************
        XF4.
-           MOVE 0 TO XFN-COMP-BYTE
-           MOVE 128 TO XFN-COMP-FACTOR
-
-           PERFORM VARYING XFN-I FROM 1 BY 1 UNTIL XFN-I > 8
-               MOVE XFN-DISPLAY-ELEMENT(XFN-I)
-                 TO XFN-COMP-ELEMENT(XFN-I)
-               MULTIPLY XFN-COMP-FACTOR BY XFN-COMP-ELEMENT(XFN-I)
-                 GIVING XFN-COMP-PRODUCT
-               ADD XFN-COMP-PRODUCT TO XFN-COMP-BYTE
-               DIVIDE 2 INTO XFN-COMP-FACTOR
-           END-PERFORM
-           .
-       XF4-EXIT.
-           EXIT
-           .
-
-      ******************************************************************
-      * FAST-XF4: Merges 8 binary digits into a single byte. *
-      ******************************************************************
-       FAST-XF4.
            PERFORM VARYING XFN-I FROM 1 BY 1 UNTIL XFN-I > 8
                MOVE XFN-DISPLAY-ELEMENT(XFN-I)
                  TO XFN-COMP-ELEMENT(XFN-I)
            END-PERFORM
 
            MOVE XFN-COMP-ELEMENT(8) TO XFN-COMP-BYTE
-
-           IF XFN-COMP-ELEMENT(7) = 1
-               ADD 2 TO XFN-COMP-BYTE
-           END-IF
-           IF XFN-COMP-ELEMENT(6) = 1
-               ADD 4 TO XFN-COMP-BYTE
-           END-IF
-           IF XFN-COMP-ELEMENT(5) = 1
-               ADD 8 TO XFN-COMP-BYTE
-           END-IF
-           IF XFN-COMP-ELEMENT(4) = 1
-               ADD 16 TO XFN-COMP-BYTE
-           END-IF
-           IF XFN-COMP-ELEMENT(3) = 1
-               ADD 32 TO XFN-COMP-BYTE
-           END-IF
-           IF XFN-COMP-ELEMENT(2) = 1
-               ADD 64 TO XFN-COMP-BYTE
-           END-IF
-           IF XFN-COMP-ELEMENT(1) = 1
-               ADD 128 TO XFN-COMP-BYTE
-           END-IF
+           IF XFN-COMP-ELEMENT(7) = 1  ADD   2 TO XFN-COMP-BYTE  END-IF
+           IF XFN-COMP-ELEMENT(6) = 1  ADD   4 TO XFN-COMP-BYTE  END-IF
+           IF XFN-COMP-ELEMENT(5) = 1  ADD   8 TO XFN-COMP-BYTE  END-IF
+           IF XFN-COMP-ELEMENT(4) = 1  ADD  16 TO XFN-COMP-BYTE  END-IF
+           IF XFN-COMP-ELEMENT(3) = 1  ADD  32 TO XFN-COMP-BYTE  END-IF
+           IF XFN-COMP-ELEMENT(2) = 1  ADD  64 TO XFN-COMP-BYTE  END-IF
+           IF XFN-COMP-ELEMENT(1) = 1  ADD 128 TO XFN-COMP-BYTE  END-IF
            .
-       FAST-XF4-EXIT.
+       XF4-EXIT.
            EXIT
            .
 
       ******************************************************************
-      * XF5: Splits a byte's bits into 8 binary digits. *
+      * XF5: Splits a byte's bits into 8 binary digits.                *
       ******************************************************************
        XF5.
-           MOVE 128 TO XFN-COMP-DIVIDEND
-
-           PERFORM VARYING XFN-I FROM 1 BY 1 UNTIL XFN-I > 8
-               DIVIDE XFN-COMP-DIVIDEND INTO XFN-COMP-BYTE
-               GIVING XFN-COMP-ELEMENT(XFN-I) REMAINDER XFN-COMP-BYTE
-               DIVIDE 2 INTO XFN-COMP-DIVIDEND
-               MOVE XFN-COMP-ELEMENT(XFN-I)
-                 TO XFN-DISPLAY-ELEMENT(XFN-I)
-           END-PERFORM
-           .
-       XF5-EXIT.
-           EXIT
-           .
-
-      ******************************************************************
-      * FAST-XF5: Splits a byte's bits into 8 binary digits. *
-      ******************************************************************
-       FAST-XF5.
            PERFORM VARYING XFN-I FROM 1 BY 1 UNTIL XFN-I > 8
                MOVE 0 TO XFN-COMP-ELEMENT(XFN-I)
            END-PERFORM
@@ -227,9 +150,8 @@
                MOVE XFN-COMP-ELEMENT(XFN-I)
                  TO XFN-DISPLAY-ELEMENT(XFN-I)
            END-PERFORM
-
            .
-       FAST-XF5-EXIT.
+       XF5-EXIT.
            EXIT
            .
 
@@ -247,12 +169,6 @@
                        MOVE 42 TO XFN-COMP-BYTE
                        PERFORM XF5 THRU XF5-EXIT
                    END-PERFORM
-               WHEN = "FAST-XF5"
-                   PERFORM VARYING WS-I FROM 1 BY 1
-                     UNTIL WS-I > WS-LIMIT
-                       MOVE 42 TO XFN-COMP-BYTE
-                       PERFORM FAST-XF5 THRU FAST-XF5-EXIT
-                   END-PERFORM
                WHEN = 'CALL X"F5"'
                    PERFORM VARYING WS-I FROM 1 BY 1
                      UNTIL WS-I > WS-LIMIT
@@ -264,12 +180,6 @@
                      UNTIL WS-I > WS-LIMIT
                        MOVE "0010101010" TO XFN-DISPLAY-ARRAY
                        PERFORM XF4 THRU XF4-EXIT
-                   END-PERFORM
-               WHEN = "FAST-XF4"
-                   PERFORM VARYING WS-I FROM 1 BY 1
-                     UNTIL WS-I > WS-LIMIT
-                       MOVE "0010101010" TO XFN-DISPLAY-ARRAY
-                       PERFORM FAST-XF4 THRU FAST-XF4-EXIT
                    END-PERFORM
                WHEN = 'CALL X"F4"'
                    PERFORM VARYING WS-I FROM 1 BY 1
