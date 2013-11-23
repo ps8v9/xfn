@@ -1,9 +1,10 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. XFN.
-      * Test program for the XF4 and XF5 procedures, which mimic GNU
-      * COBOL's X"F4" and X"F5" library routines. Some tests are run to
-      * compare their relative performance.
-
+      ******************************************************************
+      * Test program for the XF4 and XF5 procedures, which mimic GNU   *
+      * COBOL's X"F4" and X"F5" library routines. Some tests are run   *
+      * to compare their relative performance.                         *
+      ******************************************************************
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
@@ -95,7 +96,6 @@
 
       ******************************************************************
       * XF4: Looks up the byte value for a PIC X(8) bit pattern.       *
-      *           Uses BIT-STRING for the lookup. Sets SHORT-INT.  *
       ******************************************************************
        XF4.
            SEARCH ALL BYTE-REC
@@ -109,7 +109,6 @@
 
       ******************************************************************
       * XF5: Looks up the PIC X(8) bit pattern for a byte value.       *
-      *      Uses SHORT-INT for the lookup. Sets BIT-STRING.       *
       ******************************************************************
        XF5.
            SEARCH ALL BIT-REC
@@ -122,7 +121,7 @@
            .
 
       ******************************************************************
-      * BIG-LOOP: Run the specified routine pair I-MAX x J-MAX times.   *
+      * BIG-LOOP: Run the specified routine pair I-MAX x J-MAX times.  *
       ******************************************************************
        BIG-LOOP.
            MOVE 4096 TO I-MAX
@@ -143,6 +142,7 @@
                        PERFORM VARYING J FROM 1 BY 1 UNTIL J > J-MAX
                            MOVE J TO A-BYTE
                            CALL X"F5" USING A-BYTE, BYTE-ARRAY
+                           CALL X"F4" USING A-BYTE, BYTE-ARRAY
                        END-PERFORM
                    END-PERFORM
                WHEN OTHER
@@ -154,7 +154,7 @@
 
            COMPUTE CNT = I-MAX * J-MAX
            DISPLAY "Start/end times for " CNT " round trips "
-                   "through the " ROUTINE "routines:"
+                   "through the " ROUTINE " routines:"
            DISPLAY " " TIME1(1:2) ":" TIME1(3:2) ":"
                        TIME1(5:2) "." TIME1(7:2)
            DISPLAY " " TIME2(1:2) ":" TIME2(3:2) ":"
