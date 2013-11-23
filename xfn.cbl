@@ -35,22 +35,24 @@
        01  BIT-STRING  PIC X(8).
        01  SHORT-INT   BINARY-SHORT.
 
-      * Loop indexes and a loop limit.
-       01  I  BINARY-LONG.
-       01  J  BINARY-LONG.
+      * Loop indexes and limits.
+       01  I      BINARY-LONG.
+       01  J      BINARY-LONG.
+       01  I-MAX  BINARY-LONG.
+       01  J-MAX  BINARY-LONG.
 
       * Fields for performance testing.
        01  ROUTINE  PIC X(10).
        01  TIME1    PIC X(8).
        01  TIME2    PIC X(8).
-       01  LIM      BINARY-LONG.
+       01  CNT      BINARY-LONG.
 
        PROCEDURE DIVISION.
            PERFORM FILL-BIT-TABLE THRU FILL-BIT-TABLE-EXIT
            PERFORM FILL-BYTE-TABLE THRU FILL-BYTE-TABLE-EXIT
 
-           PERFORM SHOW-BIT-TABLE THRU SHOW-BIT-TABLE-EXIT
-           PERFORM SHOW-BYTE-TABLE THRU SHOW-BYTE-TABLE-EXIT
+      *    PERFORM SHOW-BIT-TABLE THRU SHOW-BIT-TABLE-EXIT
+      *    PERFORM SHOW-BYTE-TABLE THRU SHOW-BYTE-TABLE-EXIT
 
            DISPLAY "Testing the XF5 procedure:"
            MOVE 42 TO SHORT-INT
@@ -80,16 +82,10 @@
            DISPLAY "  bits: " DISPLAY-ARRAY
            DISPLAY "  byte: " A-BYTE
 
-           MOVE "XF5" TO ROUTINE
+           MOVE "XFN" TO ROUTINE
            PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
 
-           MOVE 'CALL X"F5"' TO ROUTINE
-           PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
-
-           MOVE "XF4" TO ROUTINE
-           PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
-
-           MOVE 'CALL X"F4"' TO ROUTINE
+           MOVE 'CALL X"FN"' TO ROUTINE
            PERFORM BIG-LOOP THRU BIG-LOOP-EXIT
 
            DISPLAY "Press ENTER to exit ..."
@@ -126,36 +122,28 @@
            .
 
       ******************************************************************
-      * BIG-LOOP: Execute the specified routine LIM times. *
+      * BIG-LOOP: Run the specified routine pair I-MAX x J-MAX times.   *
       ******************************************************************
        BIG-LOOP.
-           MOVE 1000000 TO LIM
+           MOVE 4096 TO I-MAX
+           MOVE 256  TO J-MAX
            ACCEPT TIME1 FROM TIME
 
            EVALUATE ROUTINE
-               WHEN = "XF5"
-                   PERFORM VARYING I FROM 1 BY 1
-                     UNTIL I > LIM
-                       MOVE 42 TO SHORT-INT
-                       PERFORM XF5 THRU XF5-EXIT
+               WHEN = "XFN"
+                   PERFORM VARYING I FROM 1 BY 1 UNTIL I > I-MAX
+                       PERFORM VARYING J FROM 1 BY 1 UNTIL J > J-MAX
+                           MOVE J TO SHORT-INT
+                           PERFORM XF5 THRU XF5-EXIT
+                           PERFORM XF4 THRU XF4-EXIT
+                       END-PERFORM
                    END-PERFORM
-               WHEN = 'CALL X"F5"'
-                   PERFORM VARYING I FROM 1 BY 1
-                     UNTIL I > LIM
-                       MOVE 42 TO A-BYTE
-                       CALL X"F5" USING A-BYTE, BYTE-ARRAY
-                   END-PERFORM
-               WHEN = "XF4"
-                   PERFORM VARYING I FROM 1 BY 1
-                     UNTIL I > LIM
-                       MOVE "0010101010" TO BIT-STRING
-                       PERFORM XF4 THRU XF4-EXIT
-                   END-PERFORM
-               WHEN = 'CALL X"F4"'
-                   PERFORM VARYING I FROM 1 BY 1
-                     UNTIL I > LIM
-                       MOVE 42 TO A-BYTE
-                       CALL X"F5" USING A-BYTE, BYTE-ARRAY
+               WHEN = 'CALL X"FN"'
+                   PERFORM VARYING I FROM 1 BY 1 UNTIL I > I-MAX
+                       PERFORM VARYING J FROM 1 BY 1 UNTIL J > J-MAX
+                           MOVE J TO A-BYTE
+                           CALL X"F5" USING A-BYTE, BYTE-ARRAY
+                       END-PERFORM
                    END-PERFORM
                WHEN OTHER
                    DISPLAY "Invalid routine name: " ROUTINE
@@ -164,8 +152,9 @@
 
            ACCEPT TIME2 FROM TIME
 
-           DISPLAY "Start/end times for " LIM
-                   " iterations of "      ROUTINE ":"
+           COMPUTE CNT = I-MAX * J-MAX
+           DISPLAY "Start/end times for " CNT " round trips "
+                   "through the " ROUTINE "routines:"
            DISPLAY " " TIME1(1:2) ":" TIME1(3:2) ":"
                        TIME1(5:2) "." TIME1(7:2)
            DISPLAY " " TIME2(1:2) ":" TIME2(3:2) ":"
